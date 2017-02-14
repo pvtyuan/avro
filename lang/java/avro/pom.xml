@@ -28,6 +28,7 @@
   </parent>
 
   <artifactId>avro</artifactId>
+  <version>1.7.8-onenet-SNAPSHOT</version>
 
   <name>Apache Avro</name>
   <url>http://avro.apache.org</url>
@@ -158,7 +159,11 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
     </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.10</version>
+    </dependency>
   </dependencies>
-
 </project>
 

@@ -20,6 +20,7 @@ package org.apache.avro.io;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.BitSet;
 
 import org.apache.avro.AvroTypeException;
@@ -28,13 +29,15 @@ import org.apache.avro.io.parsing.JsonGrammarGenerator;
 import org.apache.avro.io.parsing.Parser;
 import org.apache.avro.io.parsing.Symbol;
 import org.apache.avro.util.Utf8;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.util.DefaultPrettyPrinter;
 import org.codehaus.jackson.util.MinimalPrettyPrinter;
 
-/** An {@link Encoder} for Avro's JSON data encoding. 
+/** An {@link Encoder} for Avro's JSON data encoding.
  * </p>
  * Construct using {@link EncoderFactory}.
  * </p>
@@ -52,6 +55,8 @@ public class JsonEncoder extends ParsingEncoder implements Parser.ActionHandler 
    */
   protected BitSet isEmpty = new BitSet();
 
+  private BinaryMode binaryMode = BinaryMode.NORMAL;
+
   JsonEncoder(Schema sc, OutputStream out) throws IOException {
     this(sc, getJsonGenerator(out, false));
   }
@@ -64,6 +69,10 @@ public class JsonEncoder extends ParsingEncoder implements Parser.ActionHandler 
     configure(out);
     this.parser =
       new Parser(new JsonGrammarGenerator().generate(sc), this);
+  }
+
+  public void setBinaryMode(BinaryMode mode) {
+      this.binaryMode = mode;
   }
 
   @Override
@@ -79,7 +88,7 @@ public class JsonEncoder extends ParsingEncoder implements Parser.ActionHandler 
   private static JsonGenerator getJsonGenerator(OutputStream out, boolean pretty)
       throws IOException {
     if (null == out)
-      throw new NullPointerException("OutputStream cannot be null"); 
+      throw new NullPointerException("OutputStream cannot be null");
     JsonGenerator g
       = new JsonFactory().createJsonGenerator(out, JsonEncoding.UTF8);
     if (pretty) {
@@ -99,7 +108,7 @@ public class JsonEncoder extends ParsingEncoder implements Parser.ActionHandler 
     }
     return g;
   }
-  
+
   /**
    * Reconfigures this JsonEncoder to use the output stream provided.
    * <p/>
@@ -108,7 +117,7 @@ public class JsonEncoder extends ParsingEncoder implements Parser.ActionHandler 
    * Otherwise, this JsonEncoder will flush its current output and then
    * reconfigure its output to use a default UTF8 JsonGenerator that writes
    * to the provided OutputStream.
-   * 
+   *
    * @param out
    *          The OutputStream to direct output to. Cannot be null.
    * @throws IOException
@@ -118,7 +127,7 @@ public class JsonEncoder extends ParsingEncoder implements Parser.ActionHandler 
     this.configure(getJsonGenerator(out, false));
     return this;
   }
-  
+
   /**
    * Reconfigures this JsonEncoder to output to the JsonGenerator provided.
    * <p/>
@@ -126,7 +135,7 @@ public class JsonEncoder extends ParsingEncoder implements Parser.ActionHandler 
    * <p/>
    * Otherwise, this JsonEncoder will flush its current output and then
    * reconfigure its output to use the provided JsonGenerator.
-   * 
+   *
    * @param generator
    *          The JsonGenerator to direct output to. Cannot be null.
    * @throws IOException
@@ -184,8 +193,8 @@ public class JsonEncoder extends ParsingEncoder implements Parser.ActionHandler 
   public void writeString(Utf8 utf8) throws IOException {
     writeString(utf8.toString());
   }
-  
-  @Override 
+
+  @Override
   public void writeString(String str) throws IOException {
     parser.advance(Symbol.STRING);
     if (parser.topSymbol() == Symbol.MAP_KEY_MARKER) {
@@ -215,8 +224,19 @@ public class JsonEncoder extends ParsingEncoder implements Parser.ActionHandler 
 
   private void writeByteArray(byte[] bytes, int start, int len)
     throws IOException {
-    out.writeString(
-        new String(bytes, start, len, JsonDecoder.CHARSET));
+      String result = null;
+      switch (binaryMode) {
+          case NORMAL:
+              result = new String(bytes, start, len, JsonDecoder.CHARSET);
+              break;
+          case HEX:
+              result = Hex.encodeHexString(Arrays.copyOfRange(bytes, start, len)).toUpperCase();
+              break;
+          case BASE64:
+              result = Base64.encodeBase64String(Arrays.copyOfRange(bytes, start, len)).toUpperCase();
+              break;
+      }
+    out.writeString(result);
   }
 
   @Override
