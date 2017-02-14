@@ -55,7 +55,7 @@ public class JsonEncoder extends ParsingEncoder implements Parser.ActionHandler 
    */
   protected BitSet isEmpty = new BitSet();
 
-  private BinaryMode binaryMode = BinaryMode.NORMAL;
+  private JsonBinaryMode binaryMode = JsonBinaryMode.NORMAL;
 
   JsonEncoder(Schema sc, OutputStream out) throws IOException {
     this(sc, getJsonGenerator(out, false));
@@ -71,7 +71,7 @@ public class JsonEncoder extends ParsingEncoder implements Parser.ActionHandler 
       new Parser(new JsonGrammarGenerator().generate(sc), this);
   }
 
-  public void setBinaryMode(BinaryMode mode) {
+  public void setBinaryMode(JsonBinaryMode mode) {
       this.binaryMode = mode;
   }
 

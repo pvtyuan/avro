@@ -55,7 +55,7 @@ public class JsonDecoder extends ParsingDecoder
   ReorderBuffer currentReorderBuffer;
 
   /* add by yyz*/
-  private BinaryMode binaryMode = BinaryMode.NORMAL;
+  private JsonBinaryMode binaryMode = JsonBinaryMode.NORMAL;
   /* end */
 
   private static class ReorderBuffer {
@@ -90,7 +90,7 @@ public class JsonDecoder extends ParsingDecoder
     return new JsonGrammarGenerator().generate(schema);
   }
 
-  public void setBinaryMode(BinaryMode mode) {
+  public void setBinaryMode(JsonBinaryMode mode) {
       this.binaryMode = mode;
   }
 
