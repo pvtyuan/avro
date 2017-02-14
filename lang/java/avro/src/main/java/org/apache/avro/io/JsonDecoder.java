@@ -55,7 +55,7 @@ public class JsonDecoder extends ParsingDecoder
   ReorderBuffer currentReorderBuffer;
 
   /* add by yyz*/
-  private BinaryMode binaryMode = BinaryMode.NORMAL;
+  private JsonBinaryMode binaryMode = JsonBinaryMode.NORMAL;
   /* end */
 
   private static class ReorderBuffer {
@@ -90,7 +90,7 @@ public class JsonDecoder extends ParsingDecoder
     return new JsonGrammarGenerator().generate(schema);
   }
 
-  public void setBinaryMode(BinaryMode mode) {
+  public void setBinaryMode(JsonBinaryMode mode) {
       this.binaryMode = mode;
   }
 
@@ -460,8 +460,6 @@ public class JsonDecoder extends ParsingDecoder
     advance(Symbol.UNION);
     Symbol.Alternative a = (Symbol.Alternative) parser.popSymbol();
 
-//    String [] availableLabels = a.labels;
-
     List<String> labels = new ArrayList<String>();
     if (in.getCurrentToken() == JsonToken.VALUE_NULL) {
       labels.add("null");
@@ -493,10 +491,13 @@ public class JsonDecoder extends ParsingDecoder
 
     int m = -1;
     for (int i = 0; i < labels.size(); i++) {
+
         m = a.findLabel(labels.get(i));
         if (m >= 0) break;
     }
-    if (m < 0) throw new AvroTypeException("Unknown union branch");
+    if (m < 0) {
+        throw new AvroTypeException("Unknown union branch: " + in.getCurrentName());
+    }
     parser.pushSymbol(a.getSymbol(m));
     return m;
   }
