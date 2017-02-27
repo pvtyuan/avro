@@ -282,10 +282,11 @@ public class JsonDecoder extends ParsingDecoder
               try {
                   result = Hex.decodeHex(text.toCharArray());
               } catch (DecoderException e) {
+                  throw error("bytes");
               }
               break;
           case BASE64:
-              result = org.apache.commons.codec.binary.Base64.decodeBase64(text);
+              result = org.apache.commons.codec.binary.Base64.decodeBa4(text);
               break;
       }
       return result;
