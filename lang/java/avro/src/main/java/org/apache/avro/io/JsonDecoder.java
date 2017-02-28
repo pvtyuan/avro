@@ -282,7 +282,7 @@ public class JsonDecoder extends ParsingDecoder
               try {
                   result = Hex.decodeHex(text.toCharArray());
               } catch (DecoderException e) {
-                  throw error("bytes");
+                  throw new AvroTypeException(in.getCurrentName() + ": expect HEX");
               }
               break;
           case BASE64:
